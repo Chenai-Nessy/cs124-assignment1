@@ -9,4 +9,3 @@ randmst.class: randmst.java
 # Removes all .class files, so that the next make rebuilds them
 clean:
 	$(RM) *.class
-	rm Manifest
