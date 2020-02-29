@@ -10,16 +10,11 @@ public class randmst {
             return 0;
         }
 
+
         for (int i = 0; i < len; i++) {
             sum += (a1[i] - a2[i]) * (a1[i] - a2[i]);
         }
-
         return (Math.sqrt(sum));
-    }
-
-    // function to return vertices from the graph
-    static double[] getNode(double[][] array, int index) {
-        return array[index];
     }
 
     public static void main(String[] args) {
@@ -35,28 +30,48 @@ public class randmst {
 
         double average = 0;
 
+        long startTime = System.nanoTime();
+
         for (int trial = 0; trial < numTrials; trial++) {
             double distance = 0;
 
+            // total weight of MST
+            double totalWeight = 0;
+
             // generate random graphs
             double[][] points = new double[numPoints][dimension];
-            for (int n = 0; n < numPoints; n++) {
-                for (int d = 0; d < dimension; d++) {
-                    points[n][d] = Math.random();
+            if (dimension > 0) {
+                for (int n = 0; n < numPoints; n++) {
+                    for (int d = 0; d < dimension; d++) {
+                        points[n][d] = Math.random();
+                    }
+                }
+            } else if (dimension == 0){
+                points = new double[numPoints][1];
+                for (int n = 0; n < numPoints; n++) {
+                    points[n][0] = Math.random();
                 }
             }
 
-            // _________________________________________________________________________________________Algorithm  beginning
-            long startTime = System.nanoTime();
+            // print the points in the graph to make sure everything is ok for debugging
+//            for (int n = 0; n < numPoints; n++) {
+//                if (dimension > 0) {
+//                    for (int d = 0; d < dimension; d++) {
+//                        System.out.println("point " + n + ":" + points[n][d]);
+//                    }
+//                    System.out.println("");
+//                }
+//                else {
+//                    System.out.println("point " + n + ":" + points[n][0]);
+//                }
+//            }
 
+            // _____________________________________________________________________________________Algorithm  beginning
             // have an array of distances; initialize them to infinity
             double[] minWeights = new double[numPoints - 1];
             for (int i = 0; i < numPoints - 1; i++) {
-                minWeights[i] = 0;
+                minWeights[i] = Double.POSITIVE_INFINITY;
             }
-
-            // total weight of MST
-            double totalWeight = 0;
 
             // have an array of visited nodes; initialize everything to 1 to indicate not visited
             int[] visitedNodes = new int[numPoints];
@@ -68,62 +83,73 @@ public class randmst {
             visitedNodes[0] = 0;
 
             // marker that tells us when we want to stop iterating through our MST algorithm
+            // index variable tells us what node to look at during the next iteration
             int counter = 0;
+            int index = 0;
 
             // MST algorithm
-            while (counter < numPoints - 1) {
-                // initialize index tracker. We will update the index every time we visit a node
-                int index = 0;
-
-                // have an array of distances; initialize them to infinity
-                double[] edgeWeights = new double[numPoints];
-                for (int i = 0; i < numPoints; i++) {
+            while ( counter < numPoints - 1 ) {
+                // array that stores the distances to the edges not in our current MST; we'll use this to find the
+                // shortest edge to the rest of the available forest nodes
+                // O(n^2)
+                double[] edgeWeights = new double[numPoints - 1];
+                for (int i = 0; i < numPoints - 1; i++) {
                     edgeWeights[i] = Double.POSITIVE_INFINITY;
                 }
 
-                // calculate edges of all nodes visited combined and find the smallest that connects to nodes not visited
-                for (int i = 0; i < numPoints; i++) {
-
-                    // go to a visited node
-                    if (visitedNodes[i] == 0) {
-                        // calculate its distances from all other unvisited edges
-                        for (int j = 0; j < numPoints; j++) {
-                            if (visitedNodes[j] == 1) {
-                                // calculate the distance between vertex j and vertex i for all unvisited j
-                                distance = dist(getNode(points, i), getNode(points, j));
-                                if (distance < edgeWeights[i] && (distance != 0)) {
-                                    edgeWeights[i] = distance;
-                                    index = j;
-                                }
+                // we're gonna store the minimum edge weight to every node from our current MST to the rest of the
+                // available forest
+                // O(n^2)
+                for (int i = 0; i < numPoints - 1; i++) {
+                    if (visitedNodes[i+1] == 1) {
+                        // calculate the distance between vertex i and the current vertex that we are considering
+                        // (which is the vertex at index)
+                        distance = dist(points[i+1], points[index]);
+                        if (distance < edgeWeights[i]) {
+                            edgeWeights[i] = distance;
+                            // add edge to our MST edges if it's less than the one already in there
+                            if (edgeWeights[i] < minWeights[i]) {
+                                minWeights[i] = edgeWeights[i];
                             }
                         }
                     }
                 }
                 // find the minimum distance; this correponds to the next smallest edge weight connected to our current
                 // minimum spanning forest -- aka the edge that we have to add
+                // O(n^2)
                 double minEdge = Double.POSITIVE_INFINITY;
-                for (int i = 0; i < numPoints; i++) {
-                    if (edgeWeights[i] < minEdge) {
+                for (int i = 0; i < numPoints - 1; i++) {
+                    if ( edgeWeights[i] < minEdge ) {
                         minEdge = edgeWeights[i];
+                        index = i + 1;
                     }
                 }
                 // add edge to our MST edges
-                minWeights[counter] = minEdge;
-                totalWeight += minEdge;
+                //minWeights[counter] = minEdge;
+//                totalWeight += minEdge;
+//
+//                System.out.println("Weight " + counter + ": " + totalWeight);
+                //System.out.println("index: " + index);
+
+                // print edge weights for debugging
+//                for (int i = 0; i < numPoints - 1; i++) {
+//                    System.out.println("Edge weight " + i + ", iter " + counter + ":" + edgeWeights[i]);
+//                }
 
                 // mark the node that gave the smallest distance as visited, and update our marker
                 visitedNodes[index] = 0;
                 counter++;
             }
-            long endTime = System.nanoTime();
-
-            // how long did it take
-            // System.out.println("Took " + (double) (endTime - startTime) / 1000000000 + " s");
-
-            // update the average
-            average += totalWeight;
-
+            // add up all of the edges in our minWeights array
+            for (int i = 0; i < numPoints - 1; i++) {
+                average += minWeights[i];
+                //System.out.println("minWeights: " + minWeights[i]);
+            }
         }
+        long endTime = System.nanoTime();
+
+        // how long did it take
+        //System.out.println("Took " + (double) (endTime - startTime) / 1000000000 + " s");
 
         // compute the average
         average /= numTrials;
