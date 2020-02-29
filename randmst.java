@@ -1,5 +1,4 @@
 import java.lang.Math;
-import java.security.SecureRandom;
 
 public class randmst {
     // function to compute Euclidean distance between two nodes
@@ -31,20 +30,16 @@ public class randmst {
 
         double average = 0;
 
-        long startTime = System.nanoTime();
-
-
         for (int trial = 0; trial < numTrials; trial++) {
-            double distance = 0;
-            double totalWeight = 0;
-            SecureRandom rand = new SecureRandom();
+            double distance = 0; // temp distance variable
+            double totalWeight = 0; // total weight of MST
 
             // generate random graphs
             double[][] points = new double[numPoints][dimension];
             if (dimension > 0) {
                 for (int n = 0; n < numPoints; n++) {
                     for (int d = 0; d < dimension; d++) {
-                        points[n][d] = rand.nextDouble();
+                        points[n][d] = Math.random();
                     }
                 }
             }
@@ -89,15 +84,17 @@ public class randmst {
                         // (which is the vertex at index)
                         if (dimension > 0) {
                             distance = dist(points[i + 1], points[index]);
-                        }
-                        else {
+                        } else {
                             // this case covers the case where the dimension is 0
-                            distance = rand.nextDouble();
+                            distance = Math.random();
                         }
                         edgeWeights[i] = distance;
                         // add edge to our MST edges if it's less than the one already in there
                         if (edgeWeights[i] < minWeights[i]) {
                             minWeights[i] = edgeWeights[i];
+                        }
+                        if (edgeWeights[i] > minWeights[i]) {
+                            edgeWeights[i] = minWeights[i];
                         }
                     }
                 }
@@ -111,17 +108,6 @@ public class randmst {
                         index = i + 1;
                     }
                 }
-                // add edge to our MST edges
-                //minWeights[counter] = minEdge;
-                //                totalWeight += minEdge;
-                //
-                //                System.out.println("Weight " + counter + ": " + totalWeight);
-                //System.out.println("index: " + index);
-
-                // print edge weights for debugging
-//                                for (int i = 0; i < numPoints - 1; i++) {
-//                                    System.out.println("Min weight " + i + ", iter " + counter + ":" + minWeights[i]);
-//                                }
 
                 // mark the node that gave the smallest distance as visited, and update our counter
                 visitedNodes[index] = 0;
@@ -132,11 +118,6 @@ public class randmst {
                 average += minWeights[i];
             }
         }
-        long endTime = System.nanoTime();
-
-        // how long did it take
-        //System.out.println("Took " + (double) (endTime - startTime) / 1000000000 + " s");
-
         // compute the average
         average /= numTrials;
 
