@@ -30,6 +30,8 @@ public class randmst {
 
         double average = 0;
 
+        long startTime = System.nanoTime();
+
         for (int trial = 0; trial < numTrials; trial++) {
             double distance = 0; // temp distance variable
             double totalWeight = 0; // total weight of MST
@@ -118,6 +120,11 @@ public class randmst {
                 average += minWeights[i];
             }
         }
+        long endTime = System.nanoTime();
+
+        // time elapsed
+        System.out.println("Took " + ((float)(endTime - startTime) / 1000000000) + " s");
+
         // compute the average
         average /= numTrials;
 
